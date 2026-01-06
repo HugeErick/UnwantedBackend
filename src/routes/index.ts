@@ -1,12 +1,21 @@
-import { timeStamp } from 'console';
-import { Router } from 'express';
-import os from 'os';
+import { Router } from "express";
+import os from "os";
+import { getMDBClient } from "../db/mdb_client";
+import nurAuthRouter from "./nur/auth";
 
 const router = Router();
 
-router.get('/', (req, res) => {
-  res.send('oracle its trash & Unwanted backend');
+router.get("/", (req, res) => {
+  res.send("oracle its trash & Unwanted backend");
 });
+
+router.get("/testmdb", async (req, res) => {
+  const mdbClient = await getMDBClient();
+
+  const [mdbRows] = await mdbClient.execute("select * from devTest");
+
+  res.json({ res: mdbRows });
+})
 
 
 router.get("/api/health", (req, res) => {
@@ -21,6 +30,8 @@ router.get("/api/health", (req, res) => {
     }
   })
 })
+
+router.use("/nur", nurAuthRouter);
 
 
 export default router;

@@ -25,6 +25,16 @@ app.get('/download/unwanted-virtual-units', (req, res) => {
   });
 });
 
+app.get('/download/batch/getnas', (req, res) => {
+  const filePath = path.join(__dirname, '../binaries/batch/getNAS.bat');
+  res.download(filePath, 'getNAS.bat', (err) => {
+    if (err) {
+      console.error('Download error:', err);
+      res.status(404).send('File not found');
+    }
+  });
+});
+
 // Routes
 app.use('/', routes);
 
