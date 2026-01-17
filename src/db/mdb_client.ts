@@ -3,32 +3,40 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-let mdbConnection: mysql.Connection;
+// pool always better dont know why I did single-conn
+let pool: mysql.Pool;
 
-export async function getMDBClient() {
-  if (!mdbConnection) {
+// let mdbConnection: mysql.Connection;
+
+export function getMDBClient() {
+  if (!pool) {
     try {
-      mdbConnection = await mysql.createConnection({
+      pool = mysql.createPool({
         host: process.env.MDB_HOST,
         user: process.env.MDB_USER,
         password: process.env.MDB_PASSWORD,
         database: process.env.MDB_DBNAME,
         port: Number(process.env.MDB_PORT) || 3306,
+        waitForConnections: true,
+        connectionLimit: 5,
+        queueLimit: 0,
+        enableKeepAlive: true, 
+        keepAliveInitialDelay: 10000,
       });
 
-      console.log('Successfully connected to MariaDB');
+      console.log('Successfully pool MariaDB');
     } catch (error) {
-      console.error('Error connecting to MariaDB:', error);
+      console.error('Error creating to MariaDB pool:', error);
       throw error;
     }
   }
-  return mdbConnection;
+  return pool;
 }
 
 // graceful shutdown for MariaDB
 process.on('SIGTERM', async () => {
-  if (mdbConnection) {
-    await mdbConnection.end();
+  if (pool) {
+    await pool.end();
     console.log('MariaDB connection closed.');
   }
 });
